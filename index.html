@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#07060c">
 <meta name="app-repo" content="scared-stiff">
-<meta name="app-version" content="1.0.2">
+<meta name="app-version" content="1.0.3">
 <title>Scared Stiff</title>
 <style>
 :root{--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--ink:#ece6f4;--dim:#a197b4;--blood:#c0182f;--moon:#dfe6ff}
@@ -55,6 +55,18 @@ canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;touch-action:none;di
 #dead{background:radial-gradient(ellipse at 50% 45%,rgba(40,0,8,.35),rgba(4,0,2,.82))}
 #dead .tap{margin-top:8px}
 .ci{width:14px;height:34px}
+.tut{position:fixed;left:50%;top:calc(var(--sat) + 112px);transform:translateX(-50%);width:min(340px,90vw);box-sizing:border-box;background:rgba(20,15,34,.93);border:1px solid rgba(205,195,245,.28);border-radius:16px;padding:14px 16px 12px;z-index:8;font-size:15.5px;line-height:1.45;color:#ece6f4;box-shadow:0 8px 30px rgba(0,0,0,.55),0 0 24px rgba(140,120,220,.15);display:none;text-align:left}
+.tut.show{display:block;animation:fadein .3s ease}
+.tut .tstep{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#a197b4;margin-bottom:6px}
+.tut .trow{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.tut button{appearance:none;-webkit-appearance:none;font:600 14px Georgia,serif;cursor:pointer;touch-action:manipulation;border-radius:999px}
+.tut #tutNext{background:linear-gradient(#3a2e58,#241b3a);color:#fff;border:1px solid rgba(220,210,255,.35);padding:8px 20px;letter-spacing:.08em}
+.tut #tutSkip{background:none;border:none;color:#8f86a6;padding:6px 0;font-weight:normal;text-decoration:underline;font-size:12.5px}
+.tut .try{color:#f2c46a;font-style:italic;font-size:14px}
+.btn.pulse{animation:btnpulse 1s ease-in-out infinite;border-color:rgba(255,215,120,.8)}
+@keyframes btnpulse{50%{box-shadow:0 0 0 6px rgba(255,210,110,.35),0 0 22px rgba(255,200,100,.5)}}
+.linkbtn{appearance:none;-webkit-appearance:none;background:none;border:none;color:#b9b0cc;text-decoration:underline;font:14px Georgia,serif;margin:0 0 14px;cursor:pointer;padding:6px}
+@media (orientation:landscape) and (min-width:700px){.tut{left:24px;top:50%;transform:translateY(-50%);width:300px}}
 </style>
 </head>
 <body>
@@ -68,6 +80,7 @@ canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;touch-action:none;di
   <button class="btn" id="bMenu" aria-label="Levels"><svg viewBox="0 0 24 24"><path d="M6 21V10a6 6 0 0 1 12 0v11z"/><path d="M12 8v6M9.5 10.5h5"/><path d="M3 21h18"/></svg></button>
 </div>
 <div id="ver"></div>
+<div id="tut" class="tut"><div class="tstep" id="tutStep"></div><div id="tutText"></div><div class="trow"><button id="tutSkip">Skip tutorial</button><button id="tutNext">Next</button></div></div>
 
 <div id="title" class="screen">
   <canvas id="logo" class="logo" width="1040" height="420"></canvas>
@@ -93,6 +106,7 @@ canvas#c{position:fixed;left:0;top:0;width:100%;height:100%;touch-action:none;di
   <div class="lvlname" id="cName">Midnight Stroll</div>
   <div class="newh" id="cNew"></div>
   <div class="par" id="cPar"></div>
+  <button class="linkbtn" id="cTut" style="display:none">Show me the tutorial again</button>
   <div class="tap">Tap to begin</div>
 </div>
 
@@ -302,8 +316,8 @@ var SSE = (function () {
 })();
 /*ENGINE_END*/
 
-const LEVELS = [{"def":{"W":5,"H":6,"start":[2,5],"exit":[3,-1],"graves":[[0,1,5],[3,3,3],[4,1,1],[4,4,0]],"maus":[],"cats":[],"ghosts":[{"p":[[0,3],[1,3],[2,3]],"loop":false,"o":2}],"bats":[],"shields":[]},"par":5},{"def":{"W":5,"H":7,"start":[2,6],"exit":[0,-1],"graves":[[3,4,4],[1,5,3],[1,1,2],[2,4,1],[4,0,5]],"maus":[],"cats":[],"ghosts":[{"p":[[1,2],[1,3],[1,4],[2,4],[2,3],[2,2]],"loop":true,"o":3},{"p":[[0,5],[0,4],[0,3]],"loop":false,"o":1}],"bats":[],"shields":[]},"par":5},{"def":{"W":6,"H":7,"start":[5,6],"exit":[1,-1],"graves":[[1,6,4],[2,1,3],[2,2,4],[0,4,5],[2,5,3],[4,4,4],[4,5,2]],"maus":[[3,2,2,2]],"cats":[],"ghosts":[{"p":[[0,1],[1,1],[1,2],[1,3],[0,3],[0,2]],"loop":true,"o":1},{"p":[[1,0],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0]],"loop":true,"o":2}],"bats":[],"shields":[]},"par":5},{"def":{"W":6,"H":7,"start":[2,6],"exit":[5,-1],"graves":[[4,5,1],[2,0,4],[3,2,1],[0,2,4],[0,0,2],[4,6,1],[1,4,2]],"maus":[[2,1,2,1]],"cats":[],"ghosts":[{"p":[[3,2],[3,3],[3,4],[3,5],[4,5],[4,4],[4,3],[4,2]],"loop":true,"o":6},{"p":[[5,3],[5,2],[5,1]],"loop":false,"o":0}],"bats":[],"shields":[[4,4]]},"par":5},{"def":{"W":6,"H":8,"start":[2,7],"exit":[3,-1],"graves":[[2,4,3],[5,3,2],[0,2,1],[4,1,5],[2,5,0],[1,2,5],[1,1,2],[5,5,4]],"maus":[[4,4,2,1]],"cats":[],"ghosts":[{"p":[[2,5],[2,4],[2,3],[2,2]],"loop":false,"o":4},{"p":[[3,0],[3,1],[4,1],[4,0]],"loop":true,"o":2},{"p":[[1,4],[2,4],[3,4],[3,5],[2,5],[1,5]],"loop":true,"o":5}],"bats":[],"shields":[[2,3]]},"par":5},{"def":{"W":6,"H":8,"start":[4,7],"exit":[5,-1],"graves":[[3,0,4],[3,2,1],[2,2,3],[3,1,2],[4,4,0],[2,5,1],[0,7,4],[1,5,0]],"maus":[[2,4,2,1]],"cats":[],"ghosts":[{"p":[[5,1],[5,2],[5,3],[5,4],[5,5]],"loop":false,"o":5},{"p":[[3,3],[3,2],[3,1]],"loop":false,"o":3}],"bats":[{"a":0,"i":2,"per":4,"ph":1}],"shields":[[4,3]]},"par":5},{"def":{"W":6,"H":8,"start":[2,7],"exit":[5,-1],"graves":[[5,4,0],[0,5,5],[4,7,5],[2,0,3],[4,1,5],[3,5,5],[1,4,5],[1,3,1],[5,7,0]],"maus":[[3,2,1,2]],"cats":[],"ghosts":[{"p":[[5,0],[4,0],[3,0],[2,0],[1,0]],"loop":false,"o":2},{"p":[[3,0],[4,0],[4,1],[4,2],[4,3],[3,3],[3,2],[3,1]],"loop":true,"o":7},{"p":[[4,0],[4,1],[4,2],[4,3]],"loop":false,"o":3}],"bats":[{"a":0,"i":0,"per":4,"ph":2}],"shields":[[1,1]]},"par":5},{"def":{"W":7,"H":8,"start":[4,7],"exit":[0,-1],"graves":[[1,1,5],[6,7,5],[3,3,4],[4,1,5],[5,2,5],[5,0,0],[5,5,3],[3,2,4],[4,4,3],[1,2,1]],"maus":[[1,4,1,2]],"cats":[],"ghosts":[{"p":[[3,3],[3,4],[3,5],[3,6],[4,6],[4,5],[4,4],[4,3]],"loop":true,"o":2},{"p":[[0,0],[0,1],[0,2],[1,2],[1,1],[1,0]],"loop":true,"o":0},{"p":[[1,2],[1,1],[1,0]],"loop":false,"o":0}],"bats":[{"a":0,"i":3,"per":6,"ph":0},{"a":0,"i":5,"per":6,"ph":0}],"shields":[[1,6]]},"par":5},{"def":{"W":7,"H":9,"start":[0,8],"exit":[3,-1],"graves":[[4,1,4],[4,3,2],[5,2,4],[4,6,4],[1,2,5],[5,7,3],[1,0,0],[3,6,3],[4,2,1],[2,7,0],[4,5,2]],"maus":[[1,4,2,2],[1,1,2,1]],"cats":[],"ghosts":[{"p":[[5,2],[4,2],[3,2],[2,2],[1,2]],"loop":false,"o":4},{"p":[[0,5],[1,5],[2,5],[2,6],[1,6],[0,6]],"loop":true,"o":0},{"p":[[4,4],[4,3],[4,2],[4,1],[4,0]],"loop":false,"o":2}],"bats":[{"a":0,"i":1,"per":6,"ph":2},{"a":0,"i":4,"per":4,"ph":2}],"shields":[[0,3]]},"par":5},{"def":{"W":7,"H":9,"start":[4,8],"exit":[0,-1],"graves":[[6,3,4],[3,2,1],[0,4,0],[6,1,4],[2,8,0],[6,7,3],[2,2,5],[6,8,2],[6,6,0],[1,6,1],[3,1,3],[5,5,4]],"maus":[[0,5,2,1],[3,3,2,1]],"cats":[],"ghosts":[{"p":[[2,0],[3,0],[4,0],[4,1],[3,1],[2,1]],"loop":true,"o":2},{"p":[[4,4],[3,4],[2,4]],"loop":false,"o":3},{"p":[[6,4],[5,4],[4,4],[3,4],[2,4]],"loop":false,"o":0},{"p":[[1,7],[1,6],[1,5],[1,4]],"loop":false,"o":2}],"bats":[{"a":0,"i":0,"per":6,"ph":5},{"a":0,"i":6,"per":6,"ph":5}],"shields":[[2,3]]},"par":5},{"def":{"W":7,"H":9,"start":[3,8],"exit":[6,-1],"graves":[[0,1,4],[0,8,5],[2,3,0],[0,5,4],[5,5,4],[2,4,5],[4,3,2],[5,3,0],[2,6,2],[6,5,1],[0,6,0],[0,0,1]],"maus":[[3,1,2,2]],"cats":[{"c":2,"r":2,"f":[0,2],"e":3,"o":4,"rng":3}],"ghosts":[{"p":[[1,2],[1,3],[1,4],[1,5],[1,6]],"loop":false,"o":3},{"p":[[4,4],[4,5],[4,6],[5,6],[6,6],[6,5],[6,4],[5,4]],"loop":true,"o":3},{"p":[[1,5],[2,5],[2,6],[1,6]],"loop":true,"o":1}],"bats":[{"a":0,"i":4,"per":4,"ph":2}],"shields":[[3,4]]},"par":5},{"def":{"W":7,"H":9,"start":[3,8],"exit":[0,-1],"graves":[[6,0,1],[6,8,2],[3,5,4],[6,1,3],[4,0,3],[3,6,1],[3,2,1],[6,5,3],[1,7,5],[2,6,3],[2,7,0],[3,4,5]],"maus":[[1,5,1,2],[5,2,2,1]],"cats":[{"c":5,"r":4,"f":[0,2],"e":2,"o":0,"rng":3}],"ghosts":[{"p":[[0,4],[0,5],[0,6]],"loop":false,"o":0},{"p":[[4,4],[4,5],[4,6],[4,7]],"loop":false,"o":0},{"p":[[0,1],[0,2],[1,2],[2,2],[2,1],[1,1]],"loop":true,"o":0}],"bats":[{"a":0,"i":0,"per":6,"ph":2}],"shields":[[4,6]]},"par":5},{"def":{"W":7,"H":10,"start":[5,9],"exit":[1,-1],"graves":[[6,0,3],[1,8,3],[5,2,2],[1,6,1],[4,4,1],[1,7,4],[6,1,2],[5,4,0],[0,4,1],[4,5,5],[4,7,4],[4,8,2],[2,5,0]],"maus":[[1,2,2,1],[5,5,1,2]],"cats":[{"c":3,"r":3,"f":[1,3],"e":2,"o":2,"rng":3},{"c":3,"r":1,"f":[1,0,3,2],"e":2,"o":0,"rng":3}],"ghosts":[{"p":[[1,0],[2,0],[3,0],[4,0]],"loop":false,"o":0},{"p":[[2,7],[3,7],[4,7],[5,7]],"loop":false,"o":4},{"p":[[0,5],[1,5],[2,5],[3,5],[4,5]],"loop":false,"o":6},{"p":[[0,9],[0,8],[0,7],[0,6],[0,5]],"loop":false,"o":1}],"bats":[{"a":0,"i":4,"per":4,"ph":0}],"shields":[[2,3]]},"par":5},{"def":{"W":7,"H":10,"start":[0,9],"exit":[5,-1],"graves":[[1,6,3],[3,0,3],[5,3,3],[5,7,1],[0,0,0],[1,7,5],[2,6,0],[6,5,1],[4,3,3],[1,0,5],[4,1,4],[0,6,4],[2,7,2],[0,4,5]],"maus":[[0,2,1,2],[2,4,2,1]],"cats":[{"c":6,"r":8,"f":[1,3],"e":2,"o":1,"rng":3}],"ghosts":[{"p":[[1,4],[1,5],[2,5],[3,5],[3,4],[2,4]],"loop":true,"o":3},{"p":[[1,9],[2,9],[3,9],[4,9],[5,9]],"loop":false,"o":3},{"p":[[5,2],[5,3],[6,3],[6,2]],"loop":true,"o":2},{"p":[[0,6],[1,6],[2,6],[3,6]],"loop":false,"o":4}],"bats":[{"a":0,"i":3,"per":4,"ph":2},{"a":0,"i":7,"per":4,"ph":2}],"shields":[[3,1],[2,5]]},"par":5},{"def":{"W":7,"H":10,"start":[3,9],"exit":[0,-1],"graves":[[1,7,3],[6,3,0],[3,2,0],[6,9,4],[6,6,0],[4,4,3],[4,0,1],[3,6,1],[1,9,5],[6,8,3],[2,4,1],[0,4,5],[1,1,3],[0,7,0]],"maus":[[4,2,2,2],[0,5,1,2]],"cats":[{"c":6,"r":7,"f":[3,2,1,0],"e":2,"o":2,"rng":3},{"c":5,"r":8,"f":[1,0,3,2],"e":2,"o":4,"rng":3}],"ghosts":[{"p":[[2,3],[2,4],[2,5],[2,6],[3,6],[3,5],[3,4],[3,3]],"loop":true,"o":7},{"p":[[3,2],[4,2],[4,3],[4,4],[4,5],[3,5],[3,4],[3,3]],"loop":true,"o":4},{"p":[[2,5],[2,4],[2,3],[2,2]],"loop":false,"o":2},{"p":[[5,4],[4,4],[3,4],[2,4],[1,4]],"loop":false,"o":0}],"bats":[{"a":0,"i":1,"per":6,"ph":5},{"a":0,"i":3,"per":4,"ph":3}],"shields":[[2,1],[3,4]]},"par":5},{"def":{"W":7,"H":10,"start":[4,9],"exit":[0,-1],"graves":[[0,8,4],[6,1,4],[1,2,2],[4,1,1],[1,5,1],[2,1,2],[5,4,4],[3,3,0],[6,0,4],[2,5,2],[6,4,4],[1,4,5],[5,8,0],[2,6,5]],"maus":[[3,2,2,1],[0,5,1,2]],"cats":[{"c":2,"r":8,"f":[1,3],"e":3,"o":0,"rng":3},{"c":2,"r":7,"f":[0,2],"e":2,"o":2,"rng":3}],"ghosts":[{"p":[[4,3],[3,3],[2,3]],"loop":false,"o":2},{"p":[[1,4],[2,4],[2,5],[1,5]],"loop":true,"o":3},{"p":[[6,7],[6,6],[6,5]],"loop":false,"o":1},{"p":[[3,3],[3,2],[3,1],[3,0]],"loop":false,"o":0},{"p":[[1,7],[2,7],[3,7],[4,7]],"loop":false,"o":2}],"bats":[{"a":0,"i":0,"per":4,"ph":1},{"a":0,"i":8,"per":6,"ph":3}],"shields":[[2,0]]},"par":5},{"def":{"W":7,"H":10,"start":[1,9],"exit":[5,-1],"graves":[[6,7,0],[0,0,1],[4,3,3],[3,0,3],[5,2,5],[5,9,0],[2,4,4],[4,9,1],[4,4,0],[2,1,1],[2,0,3],[0,5,1],[0,8,2],[4,6,1]],"maus":[[2,7,2,1],[1,5,2,1]],"cats":[{"c":0,"r":6,"f":[3,2,1,0],"e":2,"o":2,"rng":3},{"c":3,"r":1,"f":[2,1,0,3],"e":3,"o":7,"rng":3}],"ghosts":[{"p":[[6,0],[6,1],[6,2]],"loop":false,"o":2},{"p":[[3,5],[3,4],[3,3],[3,2],[3,1]],"loop":false,"o":3},{"p":[[0,4],[0,3],[0,2],[0,1],[0,0]],"loop":false,"o":5},{"p":[[3,1],[3,2],[3,3],[4,3],[5,3],[5,2],[5,1],[4,1]],"loop":true,"o":7},{"p":[[1,1],[2,1],[3,1],[4,1],[4,2],[3,2],[2,2],[1,2]],"loop":true,"o":3}],"bats":[{"a":0,"i":1,"per":4,"ph":2},{"a":0,"i":5,"per":4,"ph":0}],"shields":[[6,3],[3,2]]},"par":5},{"def":{"W":7,"H":10,"start":[0,9],"exit":[5,-1],"graves":[[5,6,4],[5,7,4],[1,4,0],[6,3,5],[4,2,5],[0,2,4],[4,5,2],[6,7,1],[3,1,5],[2,7,0],[2,4,3],[1,8,4],[2,1,3],[1,6,2]],"maus":[[5,8,2,1],[2,2,1,2]],"cats":[{"c":1,"r":5,"f":[1,3],"e":2,"o":2,"rng":3},{"c":6,"r":4,"f":[0,1,2,3],"e":3,"o":9,"rng":3}],"ghosts":[{"p":[[1,1],[1,2],[1,3],[1,4]],"loop":false,"o":5},{"p":[[2,3],[3,3],[4,3],[5,3],[5,4],[4,4],[3,4],[2,4]],"loop":true,"o":7},{"p":[[0,6],[1,6],[2,6],[2,7],[2,8],[1,8],[0,8],[0,7]],"loop":true,"o":0},{"p":[[5,9],[4,9],[3,9],[2,9],[1,9]],"loop":false,"o":5},{"p":[[4,8],[3,8],[2,8],[1,8],[0,8]],"loop":false,"o":5}],"bats":[{"a":1,"i":3,"per":6,"ph":2},{"a":0,"i":4,"per":4,"ph":3},{"a":1,"i":0,"per":6,"ph":0}],"shields":[[3,8],[0,7]]},"par":5},{"def":{"W":7,"H":10,"start":[0,9],"exit":[3,-1],"graves":[[5,8,4],[6,2,1],[6,7,2],[3,7,1],[2,3,0],[1,0,4],[3,6,0],[5,5,0],[3,9,1],[0,6,1],[6,5,5],[0,3,2],[2,7,4],[5,4,2]],"maus":[[2,2,2,1],[2,5,1,2]],"cats":[{"c":6,"r":4,"f":[3,2,1,0],"e":2,"o":5,"rng":3},{"c":5,"r":1,"f":[1,2,3,0],"e":2,"o":3,"rng":3}],"ghosts":[{"p":[[1,0],[2,0],[3,0],[4,0]],"loop":false,"o":4},{"p":[[1,6],[1,5],[1,4],[1,3]],"loop":false,"o":1},{"p":[[3,7],[3,8],[4,8],[5,8],[6,8],[6,7],[5,7],[4,7]],"loop":true,"o":0},{"p":[[2,6],[3,6],[3,7],[3,8],[3,9],[2,9],[2,8],[2,7]],"loop":true,"o":5},{"p":[[0,7],[1,7],[2,7]],"loop":false,"o":1},{"p":[[2,2],[2,3],[3,3],[4,3],[5,3],[5,2],[4,2],[3,2]],"loop":true,"o":4}],"bats":[{"a":1,"i":5,"per":3,"ph":1},{"a":0,"i":4,"per":4,"ph":3},{"a":0,"i":2,"per":4,"ph":2}],"shields":[[1,4],[4,8]]},"par":5},{"def":{"W":7,"H":10,"start":[2,9],"exit":[5,-1],"graves":[[0,7,5],[0,9,3],[4,1,4],[2,4,2],[3,1,0],[4,8,3],[6,1,0],[6,2,5],[2,6,3],[4,4,1],[3,5,4],[2,3,5],[1,0,4],[3,4,5]],"maus":[[1,2,2,1],[5,7,2,2]],"cats":[{"c":6,"r":5,"f":[1,3],"e":2,"o":2,"rng":3},{"c":1,"r":3,"f":[2,3,0,1],"e":2,"o":0,"rng":3},{"c":0,"r":5,"f":[1,2,3,0],"e":2,"o":3,"rng":3}],"ghosts":[{"p":[[5,0],[5,1],[5,2],[5,3]],"loop":false,"o":5},{"p":[[5,4],[4,4],[3,4]],"loop":false,"o":1},{"p":[[0,7],[0,6],[0,5],[0,4]],"loop":false,"o":5},{"p":[[4,2],[3,2],[2,2],[1,2],[0,2]],"loop":false,"o":3},{"p":[[6,4],[5,4],[4,4]],"loop":false,"o":2},{"p":[[2,6],[2,7],[2,8],[3,8],[3,7],[3,6]],"loop":true,"o":4}],"bats":[{"a":0,"i":8,"per":4,"ph":0},{"a":1,"i":4,"per":6,"ph":5},{"a":0,"i":4,"per":3,"ph":1}],"shields":[[0,4],[6,6]]},"par":5}];
-const VERSION = '1.0.2';
+const LEVELS = [{"def":{"W":5,"H":6,"start":[2,5],"exit":[2,-1],"graves":[[0,0,0],[4,1,2],[0,3,5],[1,4,1],[4,4,0]],"maus":[],"cats":[],"ghosts":[{"p":[[0,2],[1,2],[2,2],[3,2],[4,2]],"loop":false,"o":0}],"bats":[],"shields":[]},"par":5},{"def":{"W":5,"H":7,"start":[2,6],"exit":[0,-1],"graves":[[3,4,4],[1,5,3],[1,1,2],[2,4,1],[4,0,5]],"maus":[],"cats":[],"ghosts":[{"p":[[1,2],[1,3],[1,4],[2,4],[2,3],[2,2]],"loop":true,"o":3},{"p":[[0,5],[0,4],[0,3]],"loop":false,"o":1}],"bats":[],"shields":[]},"par":5},{"def":{"W":6,"H":7,"start":[5,6],"exit":[1,-1],"graves":[[1,6,4],[2,1,3],[2,2,4],[0,4,5],[2,5,3],[4,4,4],[4,5,2]],"maus":[[3,2,2,2]],"cats":[],"ghosts":[{"p":[[0,1],[1,1],[1,2],[1,3],[0,3],[0,2]],"loop":true,"o":1},{"p":[[1,0],[1,1],[1,2],[1,3],[2,3],[2,2],[2,1],[2,0]],"loop":true,"o":2}],"bats":[],"shields":[]},"par":5},{"def":{"W":6,"H":7,"start":[2,6],"exit":[5,-1],"graves":[[4,5,1],[2,0,4],[3,2,1],[0,2,4],[0,0,2],[4,6,1],[1,4,2]],"maus":[[2,1,2,1]],"cats":[],"ghosts":[{"p":[[3,2],[3,3],[3,4],[3,5],[4,5],[4,4],[4,3],[4,2]],"loop":true,"o":6},{"p":[[5,3],[5,2],[5,1]],"loop":false,"o":0}],"bats":[],"shields":[[4,4]]},"par":5},{"def":{"W":6,"H":8,"start":[2,7],"exit":[3,-1],"graves":[[2,4,3],[5,3,2],[0,2,1],[4,1,5],[2,5,0],[1,2,5],[1,1,2],[5,5,4]],"maus":[[4,4,2,1]],"cats":[],"ghosts":[{"p":[[2,5],[2,4],[2,3],[2,2]],"loop":false,"o":4},{"p":[[3,0],[3,1],[4,1],[4,0]],"loop":true,"o":2},{"p":[[1,4],[2,4],[3,4],[3,5],[2,5],[1,5]],"loop":true,"o":5}],"bats":[],"shields":[[2,3]]},"par":5},{"def":{"W":6,"H":8,"start":[4,7],"exit":[5,-1],"graves":[[3,0,4],[3,2,1],[2,2,3],[3,1,2],[4,4,0],[2,5,1],[0,7,4],[1,5,0]],"maus":[[2,4,2,1]],"cats":[],"ghosts":[{"p":[[5,1],[5,2],[5,3],[5,4],[5,5]],"loop":false,"o":5},{"p":[[3,3],[3,2],[3,1]],"loop":false,"o":3}],"bats":[{"a":0,"i":2,"per":4,"ph":1}],"shields":[[4,3]]},"par":5},{"def":{"W":6,"H":8,"start":[2,7],"exit":[5,-1],"graves":[[5,4,0],[0,5,5],[4,7,5],[2,0,3],[4,1,5],[3,5,5],[1,4,5],[1,3,1],[5,7,0]],"maus":[[3,2,1,2]],"cats":[],"ghosts":[{"p":[[5,0],[4,0],[3,0],[2,0],[1,0]],"loop":false,"o":2},{"p":[[3,0],[4,0],[4,1],[4,2],[4,3],[3,3],[3,2],[3,1]],"loop":true,"o":7},{"p":[[4,0],[4,1],[4,2],[4,3]],"loop":false,"o":3}],"bats":[{"a":0,"i":0,"per":4,"ph":2}],"shields":[[1,1]]},"par":5},{"def":{"W":7,"H":8,"start":[4,7],"exit":[0,-1],"graves":[[1,1,5],[6,7,5],[3,3,4],[4,1,5],[5,2,5],[5,0,0],[5,5,3],[3,2,4],[4,4,3],[1,2,1]],"maus":[[1,4,1,2]],"cats":[],"ghosts":[{"p":[[3,3],[3,4],[3,5],[3,6],[4,6],[4,5],[4,4],[4,3]],"loop":true,"o":2},{"p":[[0,0],[0,1],[0,2],[1,2],[1,1],[1,0]],"loop":true,"o":0},{"p":[[1,2],[1,1],[1,0]],"loop":false,"o":0}],"bats":[{"a":0,"i":3,"per":6,"ph":0},{"a":0,"i":5,"per":6,"ph":0}],"shields":[[1,6]]},"par":5},{"def":{"W":7,"H":9,"start":[0,8],"exit":[3,-1],"graves":[[4,1,4],[4,3,2],[5,2,4],[4,6,4],[1,2,5],[5,7,3],[1,0,0],[3,6,3],[4,2,1],[2,7,0],[4,5,2]],"maus":[[1,4,2,2],[1,1,2,1]],"cats":[],"ghosts":[{"p":[[5,2],[4,2],[3,2],[2,2],[1,2]],"loop":false,"o":4},{"p":[[0,5],[1,5],[2,5],[2,6],[1,6],[0,6]],"loop":true,"o":0},{"p":[[4,4],[4,3],[4,2],[4,1],[4,0]],"loop":false,"o":2}],"bats":[{"a":0,"i":1,"per":6,"ph":2},{"a":0,"i":4,"per":4,"ph":2}],"shields":[[0,3]]},"par":5},{"def":{"W":7,"H":9,"start":[4,8],"exit":[0,-1],"graves":[[6,3,4],[3,2,1],[0,4,0],[6,1,4],[2,8,0],[6,7,3],[2,2,5],[6,8,2],[6,6,0],[1,6,1],[3,1,3],[5,5,4]],"maus":[[0,5,2,1],[3,3,2,1]],"cats":[],"ghosts":[{"p":[[2,0],[3,0],[4,0],[4,1],[3,1],[2,1]],"loop":true,"o":2},{"p":[[4,4],[3,4],[2,4]],"loop":false,"o":3},{"p":[[6,4],[5,4],[4,4],[3,4],[2,4]],"loop":false,"o":0},{"p":[[1,7],[1,6],[1,5],[1,4]],"loop":false,"o":2}],"bats":[{"a":0,"i":0,"per":6,"ph":5},{"a":0,"i":6,"per":6,"ph":5}],"shields":[[2,3]]},"par":5},{"def":{"W":7,"H":9,"start":[3,8],"exit":[6,-1],"graves":[[0,1,4],[0,8,5],[2,3,0],[0,5,4],[5,5,4],[2,4,5],[4,3,2],[5,3,0],[2,6,2],[6,5,1],[0,6,0],[0,0,1]],"maus":[[3,1,2,2]],"cats":[{"c":2,"r":2,"f":[0,2],"e":3,"o":4,"rng":3}],"ghosts":[{"p":[[1,2],[1,3],[1,4],[1,5],[1,6]],"loop":false,"o":3},{"p":[[4,4],[4,5],[4,6],[5,6],[6,6],[6,5],[6,4],[5,4]],"loop":true,"o":3},{"p":[[1,5],[2,5],[2,6],[1,6]],"loop":true,"o":1}],"bats":[{"a":0,"i":4,"per":4,"ph":2}],"shields":[[3,4]]},"par":5},{"def":{"W":7,"H":9,"start":[3,8],"exit":[0,-1],"graves":[[6,0,1],[6,8,2],[3,5,4],[6,1,3],[4,0,3],[3,6,1],[3,2,1],[6,5,3],[1,7,5],[2,6,3],[2,7,0],[3,4,5]],"maus":[[1,5,1,2],[5,2,2,1]],"cats":[{"c":5,"r":4,"f":[0,2],"e":2,"o":0,"rng":3}],"ghosts":[{"p":[[0,4],[0,5],[0,6]],"loop":false,"o":0},{"p":[[4,4],[4,5],[4,6],[4,7]],"loop":false,"o":0},{"p":[[0,1],[0,2],[1,2],[2,2],[2,1],[1,1]],"loop":true,"o":0}],"bats":[{"a":0,"i":0,"per":6,"ph":2}],"shields":[[4,6]]},"par":5},{"def":{"W":7,"H":10,"start":[5,9],"exit":[1,-1],"graves":[[6,0,3],[1,8,3],[5,2,2],[1,6,1],[4,4,1],[1,7,4],[6,1,2],[5,4,0],[0,4,1],[4,5,5],[4,7,4],[4,8,2],[2,5,0]],"maus":[[1,2,2,1],[5,5,1,2]],"cats":[{"c":3,"r":3,"f":[1,3],"e":2,"o":2,"rng":3},{"c":3,"r":1,"f":[1,0,3,2],"e":2,"o":0,"rng":3}],"ghosts":[{"p":[[1,0],[2,0],[3,0],[4,0]],"loop":false,"o":0},{"p":[[2,7],[3,7],[4,7],[5,7]],"loop":false,"o":4},{"p":[[0,5],[1,5],[2,5],[3,5],[4,5]],"loop":false,"o":6},{"p":[[0,9],[0,8],[0,7],[0,6],[0,5]],"loop":false,"o":1}],"bats":[{"a":0,"i":4,"per":4,"ph":0}],"shields":[[2,3]]},"par":5},{"def":{"W":7,"H":10,"start":[0,9],"exit":[5,-1],"graves":[[1,6,3],[3,0,3],[5,3,3],[5,7,1],[0,0,0],[1,7,5],[2,6,0],[6,5,1],[4,3,3],[1,0,5],[4,1,4],[0,6,4],[2,7,2],[0,4,5]],"maus":[[0,2,1,2],[2,4,2,1]],"cats":[{"c":6,"r":8,"f":[1,3],"e":2,"o":1,"rng":3}],"ghosts":[{"p":[[1,4],[1,5],[2,5],[3,5],[3,4],[2,4]],"loop":true,"o":3},{"p":[[1,9],[2,9],[3,9],[4,9],[5,9]],"loop":false,"o":3},{"p":[[5,2],[5,3],[6,3],[6,2]],"loop":true,"o":2},{"p":[[0,6],[1,6],[2,6],[3,6]],"loop":false,"o":4}],"bats":[{"a":0,"i":3,"per":4,"ph":2},{"a":0,"i":7,"per":4,"ph":2}],"shields":[[3,1],[2,5]]},"par":5},{"def":{"W":7,"H":10,"start":[3,9],"exit":[0,-1],"graves":[[1,7,3],[6,3,0],[3,2,0],[6,9,4],[6,6,0],[4,4,3],[4,0,1],[3,6,1],[1,9,5],[6,8,3],[2,4,1],[0,4,5],[1,1,3],[0,7,0]],"maus":[[4,2,2,2],[0,5,1,2]],"cats":[{"c":6,"r":7,"f":[3,2,1,0],"e":2,"o":2,"rng":3},{"c":5,"r":8,"f":[1,0,3,2],"e":2,"o":4,"rng":3}],"ghosts":[{"p":[[2,3],[2,4],[2,5],[2,6],[3,6],[3,5],[3,4],[3,3]],"loop":true,"o":7},{"p":[[3,2],[4,2],[4,3],[4,4],[4,5],[3,5],[3,4],[3,3]],"loop":true,"o":4},{"p":[[2,5],[2,4],[2,3],[2,2]],"loop":false,"o":2},{"p":[[5,4],[4,4],[3,4],[2,4],[1,4]],"loop":false,"o":0}],"bats":[{"a":0,"i":1,"per":6,"ph":5},{"a":0,"i":3,"per":4,"ph":3}],"shields":[[2,1],[3,4]]},"par":5},{"def":{"W":7,"H":10,"start":[4,9],"exit":[0,-1],"graves":[[0,8,4],[6,1,4],[1,2,2],[4,1,1],[1,5,1],[2,1,2],[5,4,4],[3,3,0],[6,0,4],[2,5,2],[6,4,4],[1,4,5],[5,8,0],[2,6,5]],"maus":[[3,2,2,1],[0,5,1,2]],"cats":[{"c":2,"r":8,"f":[1,3],"e":3,"o":0,"rng":3},{"c":2,"r":7,"f":[0,2],"e":2,"o":2,"rng":3}],"ghosts":[{"p":[[4,3],[3,3],[2,3]],"loop":false,"o":2},{"p":[[1,4],[2,4],[2,5],[1,5]],"loop":true,"o":3},{"p":[[6,7],[6,6],[6,5]],"loop":false,"o":1},{"p":[[3,3],[3,2],[3,1],[3,0]],"loop":false,"o":0},{"p":[[1,7],[2,7],[3,7],[4,7]],"loop":false,"o":2}],"bats":[{"a":0,"i":0,"per":4,"ph":1},{"a":0,"i":8,"per":6,"ph":3}],"shields":[[2,0]]},"par":5},{"def":{"W":7,"H":10,"start":[1,9],"exit":[5,-1],"graves":[[6,7,0],[0,0,1],[4,3,3],[3,0,3],[5,2,5],[5,9,0],[2,4,4],[4,9,1],[4,4,0],[2,1,1],[2,0,3],[0,5,1],[0,8,2],[4,6,1]],"maus":[[2,7,2,1],[1,5,2,1]],"cats":[{"c":0,"r":6,"f":[3,2,1,0],"e":2,"o":2,"rng":3},{"c":3,"r":1,"f":[2,1,0,3],"e":3,"o":7,"rng":3}],"ghosts":[{"p":[[6,0],[6,1],[6,2]],"loop":false,"o":2},{"p":[[3,5],[3,4],[3,3],[3,2],[3,1]],"loop":false,"o":3},{"p":[[0,4],[0,3],[0,2],[0,1],[0,0]],"loop":false,"o":5},{"p":[[3,1],[3,2],[3,3],[4,3],[5,3],[5,2],[5,1],[4,1]],"loop":true,"o":7},{"p":[[1,1],[2,1],[3,1],[4,1],[4,2],[3,2],[2,2],[1,2]],"loop":true,"o":3}],"bats":[{"a":0,"i":1,"per":4,"ph":2},{"a":0,"i":5,"per":4,"ph":0}],"shields":[[6,3],[3,2]]},"par":5},{"def":{"W":7,"H":10,"start":[0,9],"exit":[5,-1],"graves":[[5,6,4],[5,7,4],[1,4,0],[6,3,5],[4,2,5],[0,2,4],[4,5,2],[6,7,1],[3,1,5],[2,7,0],[2,4,3],[1,8,4],[2,1,3],[1,6,2]],"maus":[[5,8,2,1],[2,2,1,2]],"cats":[{"c":1,"r":5,"f":[1,3],"e":2,"o":2,"rng":3},{"c":6,"r":4,"f":[0,1,2,3],"e":3,"o":9,"rng":3}],"ghosts":[{"p":[[1,1],[1,2],[1,3],[1,4]],"loop":false,"o":5},{"p":[[2,3],[3,3],[4,3],[5,3],[5,4],[4,4],[3,4],[2,4]],"loop":true,"o":7},{"p":[[0,6],[1,6],[2,6],[2,7],[2,8],[1,8],[0,8],[0,7]],"loop":true,"o":0},{"p":[[5,9],[4,9],[3,9],[2,9],[1,9]],"loop":false,"o":5},{"p":[[4,8],[3,8],[2,8],[1,8],[0,8]],"loop":false,"o":5}],"bats":[{"a":1,"i":3,"per":6,"ph":2},{"a":0,"i":4,"per":4,"ph":3},{"a":1,"i":0,"per":6,"ph":0}],"shields":[[3,8],[0,7]]},"par":5},{"def":{"W":7,"H":10,"start":[0,9],"exit":[3,-1],"graves":[[5,8,4],[6,2,1],[6,7,2],[3,7,1],[2,3,0],[1,0,4],[3,6,0],[5,5,0],[3,9,1],[0,6,1],[6,5,5],[0,3,2],[2,7,4],[5,4,2]],"maus":[[2,2,2,1],[2,5,1,2]],"cats":[{"c":6,"r":4,"f":[3,2,1,0],"e":2,"o":5,"rng":3},{"c":5,"r":1,"f":[1,2,3,0],"e":2,"o":3,"rng":3}],"ghosts":[{"p":[[1,0],[2,0],[3,0],[4,0]],"loop":false,"o":4},{"p":[[1,6],[1,5],[1,4],[1,3]],"loop":false,"o":1},{"p":[[3,7],[3,8],[4,8],[5,8],[6,8],[6,7],[5,7],[4,7]],"loop":true,"o":0},{"p":[[2,6],[3,6],[3,7],[3,8],[3,9],[2,9],[2,8],[2,7]],"loop":true,"o":5},{"p":[[0,7],[1,7],[2,7]],"loop":false,"o":1},{"p":[[2,2],[2,3],[3,3],[4,3],[5,3],[5,2],[4,2],[3,2]],"loop":true,"o":4}],"bats":[{"a":1,"i":5,"per":3,"ph":1},{"a":0,"i":4,"per":4,"ph":3},{"a":0,"i":2,"per":4,"ph":2}],"shields":[[1,4],[4,8]]},"par":5},{"def":{"W":7,"H":10,"start":[2,9],"exit":[5,-1],"graves":[[0,7,5],[0,9,3],[4,1,4],[2,4,2],[3,1,0],[4,8,3],[6,1,0],[6,2,5],[2,6,3],[4,4,1],[3,5,4],[2,3,5],[1,0,4],[3,4,5]],"maus":[[1,2,2,1],[5,7,2,2]],"cats":[{"c":6,"r":5,"f":[1,3],"e":2,"o":2,"rng":3},{"c":1,"r":3,"f":[2,3,0,1],"e":2,"o":0,"rng":3},{"c":0,"r":5,"f":[1,2,3,0],"e":2,"o":3,"rng":3}],"ghosts":[{"p":[[5,0],[5,1],[5,2],[5,3]],"loop":false,"o":5},{"p":[[5,4],[4,4],[3,4]],"loop":false,"o":1},{"p":[[0,7],[0,6],[0,5],[0,4]],"loop":false,"o":5},{"p":[[4,2],[3,2],[2,2],[1,2],[0,2]],"loop":false,"o":3},{"p":[[6,4],[5,4],[4,4]],"loop":false,"o":2},{"p":[[2,6],[2,7],[2,8],[3,8],[3,7],[3,6]],"loop":true,"o":4}],"bats":[{"a":0,"i":8,"per":4,"ph":0},{"a":1,"i":4,"per":6,"ph":5},{"a":0,"i":4,"per":3,"ph":1}],"shields":[[0,4],[6,6]]},"par":5}];
+const VERSION = '1.0.3';
 // ===================== AUDIO (procedural Web Audio) =====================
 const AU = (function () {
   let ctx = null, master, musicBus, sfxBus, mRevIn, sRevIn, noiseBuf = null;
@@ -1425,7 +1439,7 @@ LEVELS.forEach((lv, i) => {
   if (FIRST.cat < 0 && d.cats.length) FIRST.cat = i;
 });
 function introFor(i) {
-  if (i === 0) return [ICON.ghost, 'Lead her to the open gate. Ghosts float through graves and chill every tile beside them. Frosted tiles will scare her if she ends her step there.'];
+  if (i === 0) return [ICON.ghost, (save.tutDone && !G.tutForce) ? 'Lead her to the open gate. Ghosts float through graves and chill every tile beside them. Frosted tiles will scare her if she ends her step there.' : 'Her first night in the graveyard. Follow the tips and you will soon know the ropes.'];
   if (i === FIRST.shield) return [ICON.shield, 'A silver shield marks safe ground. Nothing can scare her while she stands on it, so it is a good place to wait.'];
   if (i === FIRST.bat) return [ICON.bat, 'Bats roost in the hedge. When a row glows red, they will swoop along it as she takes her next step.'];
   if (i === FIRST.cat) return [ICON.cat, "Never stand in a black cat's gaze. Each cat turns its head when its yellow pips run out."];
@@ -1468,6 +1482,7 @@ function initVis() {
   G.fx = []; G.swoops = []; G.death = null; G.anim = null; G.queued = null; G.flash = null; G.bump = null;
 }
 function loadLevel(i, withCard) {
+  endTut(false);
   G.lvl = clamp(i, 0, LEVELS.length - 1);
   G.L = SSE.build(LEVELS[G.lvl].def);
   G.s = SSE.fresh(G.L);
@@ -1481,20 +1496,25 @@ function loadLevel(i, withCard) {
     $('cNew').innerHTML = it ? it[0] + '<span>' + it[1] + '</span>' : '';
     const b = save.best[G.lvl];
     $('cPar').textContent = b != null ? (b >= SSE.BASE ? 'Perfect escape ★' : `Your best: ${b} candle${b === 1 ? '' : 's'} left · all 5 can stay lit`) : '';
+    $('cTut').style.display = (G.lvl === 0 && save.tutDone) ? 'inline-block' : 'none';
     G.mode = 'card'; show('card'); setBar(true);
   }
 }
 function resetLevel() {
   G.s = SSE.fresh(G.L); initVis(); G.mode = 'play'; show(null); setBar(true); G.lastTurnEnd = performance.now();
+  if (G.tut) { G.tut.step = null; tutCheck(); }
 }
 function startPlay() {
   show(null); G.mode = 'play'; G.lastTurnEnd = performance.now(); setBar(true);
   AU.play('toll');
+  if (G.lvl === 0 && (!save.tutDone || G.tutForce)) startTut();
+  G.tutForce = false;
 }
 
 // ---------- turns ----------
 function input(dir) {
   AU.init();
+  if (G.tut && G.tut.step && TUT[G.tut.step].info) return;
   if (G.mode === 'anim') { G.queued = dir; return; }
   if (G.mode !== 'play') return;
   const ns = SSE.step(G.L, G.s, dir);
@@ -1523,7 +1543,7 @@ function endTurn() {
   v.girl.x = A.to[0]; v.girl.z = A.to[1]; v.girl.walk = 0;
   v.ghosts.forEach((g, i) => { g.x = A.gTo[i][0]; g.z = A.gTo[i][1]; });
   v.cats.forEach((c, i) => { c.face = SSE.catFacing(L.cats[i], ns.t + 1); });
-  if (ns.won) return winLevel();
+  if (ns.won) { if (G.tut) endTut(true); return winLevel(); }
   if (ns.warded && ns.warded.length) {
     v.ward = 1;
     const si = (L.def.shields || []).findIndex(sh => sh[0] === ns.c && sh[1] === ns.r);
@@ -1555,8 +1575,9 @@ function endTurn() {
     const gq = P(v.girl.x, 0.6, v.girl.z);
     for (let i = 0; i < 12; i++) G.fx.push({ k: 'ecto', x: gq.x, y: gq.y, vx: (Math.random() - 0.5) * 90, vy: -30 - Math.random() * 60, life: 1, max: 1, s: 4 + Math.random() * 5 });
   }
-  if (ns.dead) { G.mode = 'dying'; G.death = { t0: now + 380 }; setTimeout(() => AU.play('death'), 380); return; }
+  if (ns.dead) { if (G.tut) { G.tut.step = null; tutPanel(); } G.mode = 'dying'; G.death = { t0: now + 380 }; setTimeout(() => AU.play('death'), 380); return; }
   G.mode = 'play';
+  if (G.tut) tutAfterTurn(A.dir);
   if (G.queued != null) { const q = G.queued; G.queued = null; setTimeout(() => input(q), 0); }
 }
 function winLevel() {
@@ -1586,6 +1607,120 @@ function finishGame() {
   $('endNote').textContent = `${tot} candles carried out across ${LEVELS.length} levels. ${perfect} perfect escape${perfect === 1 ? '' : 's'}.`;
   drawLogo($('endLogo'), ['SCARED', 'STIFF'], 'dawn');
   G.mode = 'end'; show('endS'); setBar(false);
+}
+
+
+// ---------- level 1 tutorial ----------
+const TUT = {
+  girl: { n: 1, info: true, target: 'girl', text: 'She took a shortcut through the graveyard at midnight and now she is lost. Your job is to get her out without frightening her.' },
+  gate: { n: 2, info: true, target: 'gate', text: 'The way out is the <b>open gate</b> in the hedge. Get her through it to finish the level.' },
+  move: { n: 3, target: 'steps', text: '<b>Swipe</b>, or <b>tap a square</b> next to her, to take one step at a time.<div class="try">Try it now: take a step towards the gate.</div>' },
+  ghost: { n: 4, info: true, target: 'ghost', text: 'Every time she takes a step, the <b>ghost</b> glides one square along its dotted path. Ghosts float straight through gravestones.' },
+  frost: { n: 5, info: true, target: 'frost', text: '<b>Frosted squares</b> are where the ghost will chill after your next step. If she ends a step on one, she gets a fright.' },
+  candles: { n: 6, info: true, target: 'candles', text: 'Every fright blows out a <b>candle</b>. Lose all five and she is scared to death. Every level can be escaped with all five still lit.' },
+  wait: { n: 7, target: 'wait', text: 'The square ahead is frosted. <b>You do not have to move!</b> Tap her, or the <b>hourglass</b>, to wait a turn while the ghost drifts past.<div class="try">Try it now: wait a turn.</div>' },
+  waited: { n: 8, info: true, target: 'girl', text: 'Waiting is free. You can wait as many turns as you like, as long as she is not standing on frost. Now find a safe moment to head for the gate.' },
+  exit: { n: 9, target: 'gate', text: 'The gate is right in front of her. <b>Step into it</b> to escape!' }
+};
+function startTut() { G.tut = { step: null, taughtWait: false, moved: false }; tutShow('girl'); }
+function tutShow(id) { G.tut.step = id; tutPanel(); }
+function tutPanel() {
+  const el = $('tut'), t = G.tut;
+  $('bWait').classList.toggle('pulse', !!(t && t.step === 'wait'));
+  if (!t || !t.step) { el.classList.remove('show'); return; }
+  const d = TUT[t.step];
+  $('tutStep').textContent = 'How to play · ' + d.n + ' of 9';
+  let txt = d.text;
+  if (t.step === 'exit' && !t.taughtWait) txt += ' <span style="color:#a197b4">(And remember: tap her or the hourglass any time to wait a turn.)</span>';
+  $('tutText').innerHTML = txt;
+  $('tutNext').style.display = d.info ? '' : 'none';
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+}
+function endTut(completed) {
+  if (completed) { save.tutDone = true; persist(); }
+  G.tut = null; tutPanel();
+}
+function tutNext() {
+  const t = G.tut; if (!t || !t.step) return;
+  AU.play('click');
+  const order = { girl: 'gate', gate: 'move', ghost: 'frost', frost: 'candles' };
+  if (order[t.step]) tutShow(order[t.step]);
+  else { t.step = null; tutPanel(); tutCheck(); }
+}
+function tutAfterTurn(dir) {
+  const t = G.tut;
+  if (t.step === 'move' && dir >= 0) { t.moved = true; tutShow('ghost'); return; }
+  if (t.step === 'wait' && dir < 0) { t.taughtWait = true; tutShow('waited'); return; }
+  if (t.step === 'wait' && dir >= 0) { t.step = null; tutPanel(); } // moved instead: re-offer later
+  tutCheck();
+}
+function staticDist() {
+  const L = G.L, W = L.W, d = new Int16Array(L.N).fill(-1), q = [L.exit[0]];
+  d[L.exit[0]] = 1;
+  while (q.length) { const k = q.shift(), c = k % W, r = (k - c) / W; for (const [dc, dr] of SSE.DIRS) { const nc = c + dc, nr = r + dr; if (!SSE.passable(L, nc, nr)) continue; const n = nr * W + nc; if (d[n] < 0) { d[n] = d[k] + 1; q.push(n); } } }
+  return d;
+}
+function tutCheck() {
+  const t = G.tut; if (!t || t.step || !t.moved || G.mode !== 'play') return;
+  const L = G.L, s = G.s, W = L.W;
+  if (s.r === 0 && s.c === L.exit[0]) { tutShow('exit'); return; }
+  if (t.taughtWait) return;
+  const dz = dangerFor(s.t + 1), cur = s.r * W + s.c, dist = staticDist();
+  if (dz[cur] && !L.safe[cur]) return;
+  for (let d = 0; d < 4; d++) {
+    const nc = s.c + SSE.DIRS[d][0], nr = s.r + SSE.DIRS[d][1];
+    if (!SSE.passable(L, nc, nr)) continue;
+    const n = nr * W + nc;
+    if (dist[n] > 0 && dist[n] < dist[cur] && dz[n] && !L.safe[n]) { tutShow('wait'); return; }
+  }
+}
+function drawTut(now) {
+  const t = G.tut; if (!t || !t.step || G.mode === 'dying') return;
+  const L = G.L, s = G.s, v = G.vis, tg = TUT[t.step].target, bob = Math.sin(now / 180) * 5, pulse = 0.5 + 0.5 * Math.sin(now / 200);
+  const gold = a => `rgba(255,214,120,${a})`;
+  const arrow = (x, y) => {
+    ctx.save(); ctx.translate(x, y + bob);
+    ctx.shadowColor = 'rgba(255,200,100,.9)'; ctx.shadowBlur = 12;
+    ctx.fillStyle = gold(0.95); ctx.beginPath(); ctx.moveTo(-11, -18); ctx.lineTo(11, -18); ctx.lineTo(11, -6); ctx.lineTo(18, -6); ctx.lineTo(0, 10); ctx.lineTo(-18, -6); ctx.lineTo(-11, -6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  };
+  const ring = (x, y, rx, ry) => { ctx.strokeStyle = gold(0.55 + 0.4 * pulse); ctx.lineWidth = 2.5; el(ctx, x, y, rx * (1 + pulse * 0.08), ry * (1 + pulse * 0.08)); ctx.stroke(); };
+  const tileRing = (c, r) => { ctx.strokeStyle = gold(0.5 + 0.45 * pulse); ctx.lineWidth = 2.5; cellQuad(c, r, 0.07); ctx.stroke(); };
+  ctx.save();
+  if (tg === 'girl' || tg === 'wait') {
+    const q = P(v.girl.x, 0, v.girl.z), top = P(v.girl.x, 1.75, v.girl.z);
+    ring(q.x, q.y, q.f * 0.5, q.f * 0.32); arrow(top.x, top.y - 6);
+  } else if (tg === 'gate') {
+    const ec = L.exit[0], g = P(cx(ec), 1.55, cz(-1) - 0.3), b = P(cx(ec), 0, cz(0));
+    tileRing(ec, 0); arrow(g.x, g.y - 8);
+    ctx.strokeStyle = gold(0.35 + 0.3 * pulse); ctx.setLineDash([6, 6]); ctx.lineWidth = 2;
+    const sb = P(cx(s.c), 0.1, cz(s.r)); ctx.beginPath(); ctx.moveTo(sb.x, sb.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+  } else if (tg === 'steps') {
+    for (let d = 0; d < 4; d++) {
+      const nc = s.c + SSE.DIRS[d][0], nr = s.r + SSE.DIRS[d][1];
+      if (!SSE.passable(L, nc, nr)) continue;
+      tileRing(nc, nr);
+      const a = P(cx(s.c) + SSE.DIRS[d][0] * 0.62, 0.02, cz(s.r) - SSE.DIRS[d][1] * 0.62), ang = Math.atan2(a.y - P(cx(s.c), 0.02, cz(s.r)).y, a.x - P(cx(s.c), 0.02, cz(s.r)).x);
+      ctx.save(); ctx.translate(a.x, a.y); ctx.rotate(ang); ctx.fillStyle = gold(0.6 + 0.35 * pulse);
+      ctx.beginPath(); ctx.moveTo(9, 0); ctx.lineTo(-5, -7); ctx.lineTo(-5, 7); ctx.closePath(); ctx.fill(); ctx.restore();
+    }
+  } else if (tg === 'ghost') {
+    L.ghosts.forEach((g, i) => {
+      const gv = v.ghosts[i], q = P(gv.x, 0, gv.z), top = P(gv.x, 1.6, gv.z);
+      ring(q.x, q.y, q.f * 0.5, q.f * 0.32); arrow(top.x, top.y - 6);
+      ctx.strokeStyle = 'rgba(190,215,255,.55)'; ctx.setLineDash([4, 6]); ctx.lineWidth = 2; ctx.beginPath();
+      g.p.forEach((p, k) => { const w = P(cx(p[0]), 0.02, cz(p[1])); k ? ctx.lineTo(w.x, w.y) : ctx.moveTo(w.x, w.y); });
+      if (g.loop) ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+    });
+  } else if (tg === 'frost') {
+    const dz = dangerFor(s.t + 1);
+    for (let k = 0; k < L.N; k++) if (dz[k] & 1 && !L.safe[k]) tileRing(k % L.W, (k / L.W) | 0);
+  } else if (tg === 'candles') {
+    const n = G.candles.length, sp = Math.min(26, (CW - 40) / Math.max(1, n)), w = (n - 1) * sp + 40;
+    ctx.strokeStyle = gold(0.55 + 0.4 * pulse); ctx.lineWidth = 2.5;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(CW / 2 - w / 2, SAT + 34, w, 56, 14) : ctx.rect(CW / 2 - w / 2, SAT + 34, w, 56); ctx.stroke();
+  }
+  ctx.restore();
 }
 
 // ---------- update ----------
@@ -1994,6 +2129,7 @@ function render(now) {
     if (a > 0) { const g = ctx.createRadialGradient(CW / 2, CH / 2, Math.min(CW, CH) * 0.35, CW / 2, CH / 2, Math.max(CW, CH) * 0.75); g.addColorStop(0, 'rgba(150,0,20,0)'); g.addColorStop(1, `rgba(150,0,20,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH); }
   }
   if (G.mode !== 'title' && G.mode !== 'levels' && G.mode !== 'end') drawHUD(now);
+  drawTut(now);
 }
 
 // ---------- logo ----------
@@ -2044,7 +2180,7 @@ function buildLevels() {
     grid.appendChild(b);
   });
 }
-function openLevels() { buildLevels(); G.mode = 'levels'; show('levels'); setBar(false); }
+function openLevels() { endTut(false); buildLevels(); G.mode = 'levels'; show('levels'); setBar(false); }
 
 // ---------- input ----------
 let pd = null;
@@ -2093,6 +2229,10 @@ tapBtn('bReplay', () => { AU.play('click'); resetLevel(); });
 tapBtn('bMenu2', () => { AU.play('click'); openLevels(); });
 tapBtn('dead', () => { if (G.mode === 'dying' && G.death && performance.now() - G.death.t0 > 1900) resetLevel(); });
 tapBtn('bEndLv', () => { AU.play('click'); openLevels(); });
+$('tutNext').addEventListener('click', e => { e.stopPropagation(); tutNext(); });
+$('tut').addEventListener('click', () => { if (G.tut && G.tut.step && TUT[G.tut.step].info) tutNext(); });
+$('tutSkip').addEventListener('click', e => { e.stopPropagation(); AU.play('click'); endTut(true); });
+$('cTut').addEventListener('click', e => { e.stopPropagation(); AU.init(); AU.startMusic(); G.tutForce = true; startPlay(); });
 
 // ---------- boot ----------
 function resize() {
